@@ -1,8 +1,8 @@
 # name: discourse-mlm-daily-summary
-# about: Brings back the daily summary email for mailing list mode users.
-# version: 0.1
-# author: Joe Buhlig joebuhlig.com
-# url: https://www.github.com/joebuhlig/discourse-mlm-daily-summary
+# about: Brings back the Derivative daily summary email for mailing list mode users.
+# version: 0.2
+# author: Joe Buhlig joebuhlig.com, Johann Janzen
+# url: https://www.github.com/jakoloborodun/discourse-mlm-daily-summary
 
 enabled_site_setting :mlm_daily_summary_enabled
 
