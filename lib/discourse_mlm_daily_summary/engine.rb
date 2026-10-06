@@ -17,6 +17,8 @@ module DiscourseMlmDailySummary
                    email
          end
         def mailing_list(user, opts={})
+          return unless SiteSetting.mlm_daily_summary_enabled
+
           prepend_view_path "plugins/discourse-mlm-daily-summary/app/views"
 
           @since = opts[:since] || 1.day.ago
@@ -57,11 +59,7 @@ module DiscourseMlmDailySummary
         attributes :user_mlm_daily_summary_enabled
 
         def user_mlm_daily_summary_enabled
-          if !object.custom_fields["user_mlm_daily_summary_enabled"]
-            object.custom_fields["user_mlm_daily_summary_enabled"] = false
-            object.save
-          end
-          object.custom_fields["user_mlm_daily_summary_enabled"]
+          object.custom_fields["user_mlm_daily_summary_enabled"] || false
         end
       end
 
@@ -71,14 +69,16 @@ module DiscourseMlmDailySummary
 
           def execute(args)
             return if SiteSetting.disable_mailing_list_mode?
+            return unless SiteSetting.mlm_daily_summary_enabled
             target_user_ids.each do |user_id|
-              Jobs.enqueue(:user_email, type: :mailing_list, user_id: user_id)
+              Jobs.enqueue(:user_email, type: "mailing_list", user_id: user_id)
             end
           end
 
           def target_user_ids
             # Users who want to receive daily mailing list emails
-            enabled_ids = UserCustomField.where(name: "user_mlm_daily_summary_enabled", value: "true").pluck(:user_id)
+            # Booleans have been stored as "t" since 2024; older rows still hold "true".
+            enabled_ids = UserCustomField.where(name: "user_mlm_daily_summary_enabled", value: HasCustomFields::Helpers::CUSTOM_FIELD_TRUE).pluck(:user_id)
             User.real
                 .activated
                 .not_suspended
